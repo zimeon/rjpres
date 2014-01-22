@@ -5,7 +5,6 @@ and HEAD requests in a fairly straightforward manner.
 
 """
 
-
 __version__ = "0.6"
 
 __all__ = ["SimpleHTTPRequestHandler"]
@@ -24,7 +23,6 @@ try:
 except ImportError:
     from StringIO import StringIO
 
-
 class RjpresHTTPRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
     """Simple HTTP request handler with GET and HEAD commands.
@@ -42,18 +40,36 @@ class RjpresHTTPRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
     def do_GET(self):
         """Serve a GET request."""
-        f = self.send_head()
+        path = self.check_path()
+        f = self.send_head(path)
         if f:
             self.copyfile(f, self.wfile)
             f.close()
 
     def do_HEAD(self):
         """Serve a HEAD request."""
-        f = self.send_head()
+        path = self.check_path()
+        f = self.send_head(path)
         if f:
             f.close()
 
-    def send_head(self):
+    def check_path(self):
+        """Check path requested and work out whether we'll make a substitute"""
+        path = self.translate_path(self.path)
+        local_path = os.path.join(os.getcwd(),path)
+        data_path = os.path.join('/Users/simeon/src/rjpres/data',path)
+        if (os.path.exists(local_path)):
+            # All good, serve file requested
+            return(local_path)
+        elif (os.path.exists(data_path)):
+            # We have this as part of module data
+            self.log_message("serving %s from module data" % (data_path))
+            return(data_path)
+        else:
+            # Fall back on usual 404 etc.
+            return(local_path)
+
+    def send_head(self,path):
         """Common code for GET and HEAD commands.
 
         This sends the response code and MIME headers.
@@ -62,9 +78,7 @@ class RjpresHTTPRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         to the outputfile by the caller unless the command was HEAD,
         and must be closed by the caller under all circumstances), or
         None, in which case the caller has nothing further to do.
-
         """
-        path = self.translate_path(self.path)
         f = None
         if os.path.isdir(path):
             if not self.path.endswith('/'):
@@ -127,8 +141,12 @@ class RjpresHTTPRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
             if os.path.islink(fullname):
                 displayname = name + "@"
                 # Note: a link to a directory displays with @ and links with /
-            f.write('<li><a href="%s">%s</a>\n'
-                    % (urllib.quote(linkname), cgi.escape(displayname)))
+            if name.endswith('.md'):
+                f.write('<li><a href="%s">%s</a> <<--PRES </li>\n'
+                        % (urllib.quote(linkname), cgi.escape(displayname)))
+            else:
+                f.write('<li><a href="%s">%s</a></li>\n'
+                        % (urllib.quote(linkname), cgi.escape(displayname)))
         f.write("</ul>\n<hr>\n</body>\n</html>\n")
         length = f.tell()
         f.seek(0)
@@ -146,6 +164,8 @@ class RjpresHTTPRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         (e.g. drive or directory names) are ignored.  (XXX They should
         probably be diagnosed.)
 
+        Returns a relative path that should be interpretted in the
+        server's context.
         """
         # abandon query parameters
         path = path.split('?',1)[0]
@@ -153,12 +173,15 @@ class RjpresHTTPRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         path = posixpath.normpath(urllib.unquote(path))
         words = path.split('/')
         words = filter(None, words)
-        path = os.getcwd()
+        path = '' #os.getcwd()
         for word in words:
             drive, word = os.path.splitdrive(word)
             head, word = os.path.split(word)
             if word in (os.curdir, os.pardir): continue
-            path = os.path.join(path, word)
+            if (path==''):
+                path = word
+            else:
+                path = os.path.join(path, word)
         return path
 
     def copyfile(self, source, outputfile):
@@ -176,30 +199,6 @@ class RjpresHTTPRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
         """
         shutil.copyfileobj(source, outputfile)
-
-    def guess_type(self, path):
-        """Guess the type of a file.
-
-        Argument is a PATH (a filename).
-
-        Return value is a string of the form type/subtype,
-        usable for a MIME Content-type header.
-
-        The default implementation looks the file's extension
-        up in the table self.extensions_map, using application/octet-stream
-        as a default; however it would be permissible (if
-        slow) to look inside the data to make a better guess.
-
-        """
-
-        base, ext = posixpath.splitext(path)
-        if ext in self.extensions_map:
-            return self.extensions_map[ext]
-        ext = ext.lower()
-        if ext in self.extensions_map:
-            return self.extensions_map[ext]
-        else:
-            return self.extensions_map['']
 
     if not mimetypes.inited:
         mimetypes.init() # try to read system mime.types
