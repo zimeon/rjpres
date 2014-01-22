@@ -1,0 +1,25 @@
+rjpres - Reveal-JS Presenter
+============================
+
+Provides convenient way to run Reveal-JS on local machine
+by providing all the necessary JavaScript and CSS files
+from the install of the rjpres modules
+
+INSTALL
+-------
+
+   easy_install rjpres
+
+rjpres is listed in `PyPI
+<http://pypi.python.org/pypi/rjpres>`_ and can be installed with 
+``pip`` or ``easy_install``. 
+
+RUN
+---
+
+In some directory where you have a markdown (.md) file that will
+be your presentation:
+
+   rjp
+
+and then access as <http://localhost:9999>.
