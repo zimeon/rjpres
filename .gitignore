@@ -1,5 +1,9 @@
-# python
+### python
 *.pyc
-# editor
+### setup.py related
+build/
+dist/
+rjpres.egg-info/
+### editor
 .#*
 *~
