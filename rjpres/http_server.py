@@ -5,8 +5,7 @@ and HEAD requests in a fairly straightforward manner.
 
 """
 
-__version__ = "0.6"
-
+from _version import __version__
 __all__ = ["SimpleHTTPRequestHandler"]
 
 import os
@@ -57,7 +56,8 @@ class RjpresHTTPRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         """Check path requested and work out whether we'll make a substitute"""
         path = self.translate_path(self.path)
         local_path = os.path.join(os.getcwd(),path)
-        data_path = os.path.join('/Users/simeon/src/rjpres/data',path)
+        bin_path = os.path.join(os.path.basename(__file__),'data')
+        data_path = os.path.join(bin_path,path)
         if (os.path.exists(local_path)):
             # All good, serve file requested
             return(local_path)
