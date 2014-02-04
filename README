@@ -1,18 +1,18 @@
 rjpres - Reveal-JS Presenter
 ============================
 
-Provides convenient way to run Reveal-JS on local machine
-by providing all the necessary JavaScript and CSS files
-from the install of the rjpres modules
+Provides convenient way to run Reveal-JS on local machine by 
+providing a webserver and all the necessary JavaScript and CSS 
+files from the install of the rjpres modules. 
+
+*WORK IN PROGRESS - BUYER BEWARE*
 
 INSTALL
 -------
 
-   easy_install rjpres
+Clone from git, run
 
-rjpres is listed in `PyPI
-<http://pypi.python.org/pypi/rjpres>`_ and can be installed with 
-``pip`` or ``easy_install``. 
+   python setup.py install
 
 RUN
 ---
@@ -23,3 +23,26 @@ be your presentation:
    rjp
 
 and then access as <http://localhost:9999>.
+
+*WARNING* - this will set up a webserver running on your machine that exposes your
+filesystem below the current directory.
+
+TO-DO
+-----
+
+  * make run with ZIP instead of dir (perhaps just use fuse?)
+  * make default be to response only to localhost requests
+  * add some command line opts and documentation
+
+CREDITS & LICENESE NOTES
+------------------------
+
+This is a hack based on the work of others. See copyright and license notes in the source code which has the work of many others including:
+
+Reveal-JS <http://lab.hakim.se/reveal-js> MIT licensed, Copyright (C) 2013 Hakim El Hattab, <http://hakim.se>
+
+<https://github.com/chjj/marked> Copyright (c) 2011-2013, Christopher Jeffrey. (MIT Licensed)
+
+Themes. Copyright (C) 2012-2013 Owen Versteeg, <http://owenversteeg.com>, MIT licensed.
+
+and others
