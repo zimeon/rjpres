@@ -53,11 +53,16 @@ class RjpresHTTPRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
             f.close()
 
     def check_path(self):
-        """Check path requested and work out whether we'll make a substitute"""
+        """Check path requested and work out whether we'll make a substitution
+
+        If self.path corresponds with a file in the server context the
+        simply return that, else look for package data that matches the
+        path. In the case that neither match then return the unmodified
+        path so that when used it generates an understandable error.
+        """
         path = self.translate_path(self.path)
-        local_path = os.path.join(os.getcwd(),path)
-        bin_path = os.path.join(os.path.basename(__file__),'data')
-        data_path = os.path.join(bin_path,path)
+        local_path = os.path.join(self.base_dir,path)
+        data_path = os.path.join(self.data_dir,path)
         if (os.path.exists(local_path)):
             # All good, serve file requested
             return(local_path)
@@ -101,8 +106,15 @@ class RjpresHTTPRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
             # transmitted *less* than the content-length!
             f = open(path, 'rb')
         except IOError:
-            self.send_error(404, "File not found")
-            return None
+            # Should we generate a dynamic wrapper?
+            surl = self.wrapper.source_url(path)
+            if (surl):
+                f = self.wrapper.wrapper(surl)
+                self.send_head_from_stringio(f)
+                return f
+            else:
+                self.send_error(404, "File not found")
+                return None
         self.send_response(200)
         self.send_header("Content-type", ctype)
         fs = os.fstat(f.fileno())
@@ -141,13 +153,19 @@ class RjpresHTTPRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
             if os.path.islink(fullname):
                 displayname = name + "@"
                 # Note: a link to a directory displays with @ and links with /
-            if name.endswith('.md'):
-                f.write('<li><a href="%s">%s</a> <<--PRES </li>\n'
-                        % (urllib.quote(linkname), cgi.escape(displayname)))
+            wurl = self.wrapper.wrapper_url(name)
+            if (wurl):
+                f.write('<li><a href="%s" alt="raw markdown" style="color: #bbb">%s</a> <b><a href="%s" alt="presentation">Presentation</a></b></li>\n'
+                        % (urllib.quote(linkname), cgi.escape(displayname),
+                           urllib.quote(wurl)))
             else:
                 f.write('<li><a href="%s">%s</a></li>\n'
                         % (urllib.quote(linkname), cgi.escape(displayname)))
         f.write("</ul>\n<hr>\n</body>\n</html>\n")
+        self.send_head_from_stringio(f)
+        return f
+
+    def send_head_from_stringio(self,f):
         length = f.tell()
         f.seek(0)
         self.send_response(200)
@@ -155,7 +173,6 @@ class RjpresHTTPRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         self.send_header("Content-type", "text/html; charset=%s" % encoding)
         self.send_header("Content-Length", str(length))
         self.end_headers()
-        return f
 
     def translate_path(self, path):
         """Translate a /-separated PATH to the local filename syntax.

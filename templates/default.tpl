@@ -1,15 +1,13 @@
 <!doctype html>
 <html lang="en">
+<!-- This is a template file, must use {{ }} in place of { } except where argument name -->
 <head>
 <meta charset="utf-8">
-
-<title>rjpres - example - pres1</title>
-<meta name="description" content="rjpres - example - pres1"/>
+<title>{title}</title>
+<meta name="description" content="{title}"/>
 <meta name="author" content="Simeon Warner">
-
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
 <link rel="stylesheet" href="/css/reveal.min.css">
@@ -32,7 +30,7 @@
 
 <div class="reveal">
   <div class="slides">
-<section data-markdown="pres1.md" data-separator="^---" data-vertical="^\*\*\*" data-notes="^Note:" data-charset="iso-8859-15"></section>
+<section data-markdown="{md_file}" data-separator="^---" data-vertical="^\*\*\*" data-notes="^Note:" data-charset="iso-8859-15"></section>
  </div>
 </div>
 
@@ -43,7 +41,7 @@
 
    // Full list of configuration options available here:
    // https://github.com/hakimel/reveal.js#configuration
-   Reveal.initialize({
+   Reveal.initialize({{
     controls: true,
     progress: true,
     history: true,
@@ -54,14 +52,14 @@
 
     // Optional libraries used to extend on reveal.js
     dependencies: [
-     { src: '/lib/js/classList.js', condition: function() { return !document.body.classList; } },
-     { src: '/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
-     { src: '/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
-     { src: '/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
-     { src: '/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
-     { src: '/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+     {{ src: '/lib/js/classList.js', condition: function() {{ return !document.body.classList; }} }},
+     {{ src: '/plugin/markdown/marked.js', condition: function() {{ return !!document.querySelector( '[data-markdown]' ); }} }},
+     {{ src: '/plugin/markdown/markdown.js', condition: function() {{ return !!document.querySelector( '[data-markdown]' ); }} }},
+     {{ src: '/plugin/highlight/highlight.js', async: true, callback: function() {{ hljs.initHighlightingOnLoad(); }} }},
+     {{ src: '/plugin/zoom-js/zoom.js', async: true, condition: function() {{ return !!document.body.classList; }} }},
+     {{ src: '/plugin/notes/notes.js', async: true, condition: function() {{ return !!document.body.classList; }} }}
     ]
-   });
+   }});
 
   </script>
 

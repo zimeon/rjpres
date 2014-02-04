@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 
+import os.path
 import sys
 import BaseHTTPServer
-from rjpres import RjpresHTTPRequestHandler
+from rjpres.http_server import RjpresHTTPRequestHandler
+from rjpres.html_wrapper import HtmlWrapper
 
-def test(HandlerClass = RjpresHTTPRequestHandler,
-         ServerClass = BaseHTTPServer.HTTPServer):
+def run(HandlerClass, ServerClass, wrapper):
     protocol='HTTP/1.0'
     if sys.argv[1:]:
         port = int(sys.argv[1])
@@ -14,13 +15,18 @@ def test(HandlerClass = RjpresHTTPRequestHandler,
     server_address = ('', port)
 
     HandlerClass.protocol_version = protocol
+    HandlerClass.wrapper = wrapper
+    HandlerClass.base_dir = wrapper.base_dir
+    HandlerClass.data_dir = wrapper.data_dir
     httpd = ServerClass(server_address, HandlerClass)
 
     sa = httpd.socket.getsockname()
     print "Serving HTTP on", sa[0], "port", sa[1], "..."
     httpd.serve_forever()
 
-test()
-
-
+# Find install directory which has data and template sub-directories
+base_dir = os.getcwd()
+data_dir = os.path.join(os.path.dirname(__file__),'data')
+wrapper = HtmlWrapper(base_dir=base_dir, data_dir=data_dir)
+run(RjpresHTTPRequestHandler, BaseHTTPServer.HTTPServer, wrapper)
 
