@@ -139,10 +139,13 @@ class RjpresHTTPRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         list.sort(key=lambda a: a.lower())
         f = StringIO()
         displaypath = cgi.escape(urllib.unquote(self.path))
-        f.write('<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">')
-        f.write("<html>\n<title>Directory listing for %s</title>\n" % displaypath)
-        f.write("<body>\n<h2>Directory listing for %s</h2>\n" % displaypath)
-        f.write("<hr>\n<ul>\n")
+        f.write('<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">\n')
+        f.write("<html>\n<head>\n")
+        f.write("<title>Directory listing for %s</title>\n" % displaypath)
+        f.write('<link rel="stylesheet" href="/css/rjpres.css">\n</head<\n>')
+        f.write("<body>\n")
+        presentations = []
+        files = []
         for name in list:
             fullname = os.path.join(path, name)
             displayname = linkname = name
@@ -155,13 +158,28 @@ class RjpresHTTPRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
                 # Note: a link to a directory displays with @ and links with /
             wurl = self.wrapper.wrapper_url(name)
             if (wurl):
-                f.write('<li><a href="%s" alt="raw markdown" style="color: #bbb">%s</a> <b><a href="%s" alt="presentation">Presentation</a></b></li>\n'
-                        % (urllib.quote(linkname), cgi.escape(displayname),
-                           urllib.quote(wurl)))
+                files.append(
+                    '<li class="markdown"><a href="%s" alt="raw markdown">%s</a></li>\n'
+                    % (urllib.quote(linkname), cgi.escape(displayname)))
+                presentations.append(
+                    '<li class="pres"><a href="%s" alt="presentation">Presentation of %s</a></li>\n'
+                    % (urllib.quote(wurl), cgi.escape(displayname)))
             else:
-                f.write('<li><a href="%s">%s</a></li>\n'
-                        % (urllib.quote(linkname), cgi.escape(displayname)))
-        f.write("</ul>\n<hr>\n</body>\n</html>\n")
+                files.append(
+                    '<li><a href="%s">%s</a></li>\n'
+                    % (urllib.quote(linkname), cgi.escape(displayname)))
+        # Write sections with entries...
+        if (len(presentations)>0):
+            f.write("<h2>Presentations</h2>\n")
+            f.write("<ul>\n")
+            f.write(''.join(presentations))
+            f.write("</ul>\n\n")
+        if (len(files)>0):
+            f.write("<h2>Directory listing for %s</h2>\n" % displaypath)
+            f.write("<ul>\n")
+            f.write(''.join(files))
+            f.write("</ul>\n")
+        f.write("</body>\n</html>\n")
         self.send_head_from_stringio(f)
         return f
 

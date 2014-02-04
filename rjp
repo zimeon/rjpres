@@ -25,8 +25,8 @@ def run(HandlerClass, ServerClass, wrapper):
     httpd.serve_forever()
 
 # Find install directory which has data and template sub-directories
+verbose = True
 base_dir = os.getcwd()
-data_dir = os.path.join(os.path.dirname(__file__),'data')
-wrapper = HtmlWrapper(base_dir=base_dir, data_dir=data_dir)
+wrapper = HtmlWrapper(base_dir=base_dir, verbose=True)
 run(RjpresHTTPRequestHandler, BaseHTTPServer.HTTPServer, wrapper)
 

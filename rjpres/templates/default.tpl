@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en">
-<!-- This is a template file, must use {{ }} in place of { } except where argument name -->
+<!-- This is a template file, must use {{ }} in place of single brances except where argument name -->
 <head>
 <meta charset="utf-8">
 <title>{title}</title>

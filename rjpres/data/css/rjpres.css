@@ -1,0 +1,15 @@
+/* CSS for rjpres
+ *
+ */
+
+body {
+ font-family: sans-serif;
+}
+
+.pres {
+ font-size: 120%;
+}
+
+.markdown {
+ color: #999;
+}

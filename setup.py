@@ -19,6 +19,7 @@ setup(
     name='rjpres',
     version=version,
     packages=['rjpres'],
+    package_data={'rjpres': ['data/*/*.*','data/*/*/*.*','data/*/*/*/*.*','templates/*']},
     scripts=['rjp'],
     classifiers=["Development Status :: 3 - Alpha",
                  "Intended Audience :: Developers",
