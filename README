@@ -45,6 +45,6 @@ Reveal-JS <http://lab.hakim.se/reveal-js> MIT licensed, Copyright (C) 2013 Hakim
 
 Themes. Copyright (C) 2012-2013 Owen Versteeg, <http://owenversteeg.com>, MIT licensed.
 
-<http://docs.python.org/library/SimpleHTTPServer>
+SimpleHTTPServer <http://docs.python.org/2/library/simplehttpserver.html>
 
 and others
