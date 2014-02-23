@@ -1,8 +1,10 @@
-"""Simple HTTP Server.
+"""HTTP Server for rjpres
 
-This module builds on BaseHTTPServer by implementing the standard GET
-and HEAD requests in a fairly straightforward manner.
-
+This module builds on SimpleHTTPServer by adding extra functionality
+to deal with serving files from two directory trees (the user's dir 
+and a static data dir), dynamically providing wrapper pages, and
+processing Markdown files that perhaps weren't orginally designed 
+for presentation with Reveal-JS.
 """
 
 from _version import __version__
@@ -10,7 +12,6 @@ __all__ = ["SimpleHTTPRequestHandler"]
 
 import os
 import posixpath
-import BaseHTTPServer
 import SimpleHTTPServer
 import urllib
 import cgi
@@ -283,12 +284,3 @@ class RjpresHTTPRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         '.c': 'text/plain',
         '.h': 'text/plain',
         })
-
-
-def test(HandlerClass = RjpresHTTPRequestHandler,
-         ServerClass = BaseHTTPServer.HTTPServer):
-    BaseHTTPServer.test(HandlerClass, ServerClass)
-
-
-if __name__ == '__main__':
-    test()
