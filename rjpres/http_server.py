@@ -23,6 +23,7 @@ try:
     from cStringIO import StringIO
 except ImportError:
     from StringIO import StringIO
+from rjpres.md_munge import MdMunge
 
 class RjpresHTTPRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
@@ -140,21 +141,32 @@ class RjpresHTTPRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
             else:
                 return self.list_directory(path)
         ctype = self.guess_type(path)
+        sio = None
         try:
             # Always read in binary mode. Opening files in text mode may cause
             # newline translations, making the actual size of the content
             # transmitted *less* than the content-length!
             f = open(path, 'rb')
+            # Is this a markdown file which needs to be processed first?
+            wurl = self.wrapper.wrapper_url(path)
+            if (wurl):
+                mdm = MdMunge()
+                sio = mdm.md_needs_munge(f)
+                if (sio):
+                    self.log_message("have processed markdown for %s" % (path))
         except IOError:
             # Should we generate a dynamic wrapper?
             surl = self.wrapper.source_url(path)
             if (surl):
-                f = self.wrapper.wrapper(surl)
-                self.send_head_from_stringio(f)
-                return f
+                sio = self.wrapper.wrapper(surl)
+                self.log_message("have generated wrapped for %s" % (surl))
             else:
                 self.send_error(404, "File not found")
                 return None
+        # Now expect to have either valid sio stream else valid f
+        if (sio):
+            self.send_head_from_stringio(sio)
+            return sio
         self.send_response(200)
         self.send_header("Content-type", ctype)
         fs = os.fstat(f.fileno())
@@ -224,10 +236,14 @@ class RjpresHTTPRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         return f
 
     def send_head_from_stringio(self,f):
+        """Write HTTP HEAD from StringIO, leaving f ready to copy contents
+
+        Note: expects f to be at end so that tell() works to get length
+        """
         length = f.tell()
         f.seek(0)
-        self.send_response(200)
         encoding = sys.getfilesystemencoding()
+        self.send_response(200)
         self.send_header("Content-type", "text/html; charset=%s" % encoding)
         self.send_header("Content-Length", str(length))
         self.end_headers()
