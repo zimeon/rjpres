@@ -14,6 +14,7 @@ import BaseHTTPServer
 import SimpleHTTPServer
 import urllib
 import cgi
+import re
 import sys
 import shutil
 import mimetypes
@@ -35,22 +36,60 @@ class RjpresHTTPRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
     """
 
-    server_version = "SimpleHTTP/" + __version__
+    # Class variables used for a number of configurations used each
+    # time this handler is instantiated
+    server_version = "SimpleHTTP+rjpres/" + __version__
+    #protocol_version ... HTTP protocol, no need to override
+    #wrapper ... request wrapper
+    #base_dir ... base dir of files to serve
+    #data_dir ... dir of local data with RevealJS etc
+    allow_from = None #set to list of IP regexs to allow access from
 
-    def do_GET(self):
-        """Serve a GET request."""
+    def do_GET(self, is_head=False):
+        """Serve a GET request (or HEAD by truncating)
+        
+        The HEAD response is identical to GET except that no
+        content is sent, could likely be optimized.
+        """
+        if (not self.check_access()):
+            return
         path = self.check_path()
         f = self.send_head(path)
         if f:
-            self.copyfile(f, self.wfile)
-            f.close()
+            if (not is_head):
+                self.copyfile(f, self.wfile)
+                f.close()
 
     def do_HEAD(self):
-        """Serve a HEAD request."""
-        path = self.check_path()
-        f = self.send_head(path)
-        if f:
-            f.close()
+        """Serve a HEAD request
+
+        All this does is call do_GET with the flag is_head set to do
+        everything except actually sending content
+        """
+        self.do_GET(is_head=True)
+
+    def check_access(self):
+        """Should we answer this request? Send error and respond False if not
+
+        If we wanted to be more brutal and simply not answer then this 
+        could be done via override of superclass verify_request(). However,
+        will answer this with a 403 so do it in HTTP.
+
+        FIXME - should implement something based on the dotted IP notation
+
+        FIXME - should work with numeric IPs (left partfirst) and resolved
+        IP (right part first, currently not implemented)
+        """
+        if (self.allow_from is None):
+            return True
+        # have access control list
+        remote_host = self.client_address[0]
+        for pattern in self.allow_from:
+            if (re.match(pattern,remote_host)):
+                return True
+        # no match => not allowed
+        self.send_error(403)
+        return False
 
     def check_path(self):
         """Check path requested and work out whether we'll make a substitution

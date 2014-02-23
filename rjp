@@ -1,32 +1,81 @@
 #!/usr/bin/env python
+"""
+rjp: The rjpres server
 
+rjpres is a packaged version of Reveal-JS, style files and
+a simple webserver.
+
+Copyright 2014 Simeon Warner
+"""
+
+import optparse
 import os.path
+import re
 import sys
 import BaseHTTPServer
 from rjpres.http_server import RjpresHTTPRequestHandler
 from rjpres.html_wrapper import HtmlWrapper
+from rjpres._version import __version__
 
-def run(HandlerClass, ServerClass, wrapper):
+DEFAULT_PORT = 9999
+
+def main():
+
+    if (sys.version_info < (2,6)):
+        sys.exit("This program requires python version 2.6 or later")
+
+    # Options and arguments
+    p = optparse.OptionParser(description='rjpres webserver which will run on http://localhost:%d/ unless another port is specified (-p) and will be answer requests only from the local machine unless more open permissions are specified (-o, -a). Current directory is the webserver base directory unless a directory is supplied as the one and only positional argument.'%(DEFAULT_PORT),
+                              usage='usage: %prog [options] [directory] (-h for help)',
+                              version='%prog '+__version__ )
+
+    p.add_option('--port', '-p', action='store', type=int,
+                 help='port to run server on (default %d)'%(DEFAULT_PORT))
+    p.add_option('--allow', '-a', action='store', type=str,
+                 help='allow access from hosts that match this comma separated list of python regexs matched against host name. Match is against whole string "^...$" implied. Currently supports only IP number match, not hostname. (Beware that this will expose parts of your disk to download from clients at the hosts specified)')
+    p.add_option('--open', '-o', action='store_true',
+                 help='allow access from anywhere (Beware that this will expose parts of your disk to download by any client to the internet or any local network you are connected too)')
+
+    (args, dirs) = p.parse_args()
+
+    # Use either current directory or one specified as base_dir
+    base_dir = os.getcwd()
+    if (len(dirs)==1):
+        base_dir = dirs[0]
+    elif (len(dirs)>1):
+        sys.exit("Supports only one base directory as argument (-h for help)")
+
+    # Make set of python regex patterns (compile them as will be repeatedly reused)
+    allow_from = [re.compile('127\.0\.0\.1$')] #default is local only
+    if (args.open):
+        allow_from = None
+    elif (args.allow):
+        for pattern in args.allow.split(','):
+            print "pattern = %s" % (pattern)
+            allow_from.append(re.compile(pattern))
+
+    # Find install directory which has data and template sub-directories
+    verbose = True
+    wrapper = HtmlWrapper(base_dir=base_dir, verbose=True)
+    run(RjpresHTTPRequestHandler, BaseHTTPServer.HTTPServer, wrapper,
+        port = (args.port or DEFAULT_PORT),
+        allow_from = allow_from)
+
+def run(HandlerClass, ServerClass, wrapper, port, allow_from):
+    
     protocol='HTTP/1.0'
-    if sys.argv[1:]:
-        port = int(sys.argv[1])
-    else:
-        port = 9999
-    server_address = ('', port)
+    server_address = ('localhost', port)
 
     HandlerClass.protocol_version = protocol
     HandlerClass.wrapper = wrapper
     HandlerClass.base_dir = wrapper.base_dir
     HandlerClass.data_dir = wrapper.data_dir
+    HandlerClass.allow_from = allow_from
     httpd = ServerClass(server_address, HandlerClass)
 
     sa = httpd.socket.getsockname()
-    print "Serving HTTP on", sa[0], "port", sa[1], "..."
+    print "Serving HTTP on %s port %s..." % sa
     httpd.serve_forever()
 
-# Find install directory which has data and template sub-directories
-verbose = True
-base_dir = os.getcwd()
-wrapper = HtmlWrapper(base_dir=base_dir, verbose=True)
-run(RjpresHTTPRequestHandler, BaseHTTPServer.HTTPServer, wrapper)
-
+if __name__ == '__main__':
+    main()
