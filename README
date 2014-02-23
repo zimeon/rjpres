@@ -3,16 +3,18 @@ rjpres - Reveal-JS Presenter
 
 Provides convenient way to run Reveal-JS on local machine by 
 providing a webserver and all the necessary JavaScript and CSS 
-files from the install of the rjpres modules. 
+files required as part of the `rjpres` installation. 
 
-*WORK IN PROGRESS - BUYER BEWARE*
+*WORK IN PROGRESS - BUYER BEWARE (free only as in puppy...)*
 
 INSTALL
 -------
 
-Clone from git, run
+Clone from git, then install with
 
+```
    python setup.py install
+```
 
 RUN
 ---
@@ -20,22 +22,30 @@ RUN
 In some directory where you have a markdown (.md) file that will
 be your presentation:
 
+```
    rjp
+```
 
-and then access as <http://localhost:9999>.
+and then access as <http://localhost:9999> from the same machine. You may optionally specify a base directory to serve from:
 
-*WARNING* - this will set up a webserver running on your machine that exposes your
-filesystem below the current directory.
+```perl
+    rip my/base/dir
+```
+
+By default, access is limited to localhost. Use `-h` for help.
+
+If you want to be able to access from other machines then see the `--allow` and `--open` options. **WARNING** - using these options this will set up a webserver running on your machine that exposes your
+filesystem below the current directory to other machines on the network.
 
 TO-DO
 -----
 
   * make run with ZIP instead of dir (perhaps just use fuse?)
-  * make default be to response only to localhost requests
-  * add some command line opts and documentation
+  * improve access control
+  * add auto-page break mode that makes pages on sections where none are explicitly specified
 
-CREDITS & LICENESE NOTES
-------------------------
+CREDITS & LICENSE NOTES
+-----------------------
 
 This is a hack based on the work of others. See copyright and license notes in the source code which has the work of many others including:
 
