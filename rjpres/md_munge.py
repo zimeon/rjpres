@@ -45,20 +45,21 @@ class MdMunge(object):
         """Return StringIO object that is munged Markdown
         
         Add horizontal and vertical page breaks before level 1 and
-        level 2 headings respectively. Requires Reveal-JS to be set
+        level 2 headings respectively. Also add vertical page
+        breaks before images. Requires Reveal-JS to be set
         up with --- as horizontal and *** as vertical pagebreak.
         """
         # Create StringIO() object with modified content
         f = StringIO()        
         seen_heading = False
         for line in md.readlines():
-            m = re.match("(#{1,2})\s",line)
+            m = re.match("((#+)\s|\!\[)",line)
             if (m):
-                if (m.group(1)=='#' and seen_heading):
+                if (m.group(2)=='#' and seen_heading):
                     # have level 1 heading
                     f.write("---\n\n")
-                elif (m.group(1)=='##' and seen_heading):
-                    # have level 1 heading
+                elif (m.group(2)=='##' or m.group(1)=='![' and seen_heading):
+                    # have level 2 heading
                     f.write("***\n\n")
                 seen_heading = True
             f.write(line)

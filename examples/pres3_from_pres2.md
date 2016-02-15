@@ -31,10 +31,10 @@
 
 # 3. Convincing argument
 
----
-
-# The End 
+***
 
 ![Picture](pres1.png)
 
+---
 
+# The End 
