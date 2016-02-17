@@ -14,7 +14,7 @@ body {
   font-family: sans-serif;
   font-size: 36px;
   font-weight: 200;
-  letter-spacing: -0.01em;
+  /*letter-spacing: -0.006em;*/
   color: #eeeeee; }
 
 ::selection {
@@ -66,7 +66,7 @@ body {
  *********************************************/
 .reveal section img {
   display: block;
-  margin-left: auto;
+  margin-left: 0px;
   margin-right: auto;
   background: rgba(0, 0, 0, 0.12);
   border: 0px solid #eeeeee;
@@ -138,6 +138,12 @@ em {
 
 ul ol {
   text-align: left;
+}
+
+.reveal p {
+  margin-top: 1.5ex;
+  margin-bottom: 1.5ex;
+  line-height: 2.0ex;
 }
 
 .reveal .slides {
